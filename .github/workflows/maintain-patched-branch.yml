@@ -58,6 +58,9 @@ jobs:
         # Add the parent repository as a remote with authentication token
         git remote add parent-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git || true
         
+        # Remove workflow files don't want them in the patched branch
+        rm -rf .github/workflows/ || true
+        
         # Push the patched commits to the patched branch on the parent repository
         # The current HEAD in botd submodule contains all the patched commits
         git push --force parent-repo HEAD:refs/heads/patched
