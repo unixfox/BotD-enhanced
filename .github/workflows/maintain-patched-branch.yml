@@ -8,6 +8,9 @@ on:
 jobs:
   maintain-patched-branch:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to push to the repository
+      pull-requests: read # Needed to read repository information
     
     steps:
     - name: Checkout repository
@@ -52,8 +55,8 @@ jobs:
         # Navigate to botd submodule directory
         cd botd
         
-        # Add the parent repository as a remote (if not already exists)
-        git remote add parent-repo https://github.com/${{ github.repository }}.git
+        # Add the parent repository as a remote with authentication token
+        git remote add parent-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git || true
         
         # Push the patched commits to the patched branch on the parent repository
         # The current HEAD in botd submodule contains all the patched commits
