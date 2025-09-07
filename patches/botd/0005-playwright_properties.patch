@@ -1,0 +1,83 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Emilien <4016501+unixfox@users.noreply.github.com>
+Date: Sun, 7 Sep 2025 22:00:58 +0200
+Subject: [PATCH 5/6] playwright_properties
+
+---
+ src/detectors/playwright_properties.ts    | 19 +++++++++++++++++++
+ src/sources/playwright_properties.test.ts | 11 +++++++++++
+ src/sources/playwright_properties.ts      | 18 ++++++++++++++++++
+ 3 files changed, 48 insertions(+)
+ create mode 100644 src/detectors/playwright_properties.ts
+ create mode 100644 src/sources/playwright_properties.test.ts
+ create mode 100644 src/sources/playwright_properties.ts
+
+diff --git a/src/detectors/playwright_properties.ts b/src/detectors/playwright_properties.ts
+new file mode 100644
+index 0000000..a7ff5b0
+--- /dev/null
++++ b/src/detectors/playwright_properties.ts
+@@ -0,0 +1,19 @@
++import { BotKind, ComponentDict, DetectorResponse, State, BrowserEngineKind } from '../types'
++import { getBrowserEngineKind } from '../utils/browser'
++
++export function detectPlaywright({ playwrightProperties }: ComponentDict): DetectorResponse {
++  // Only run on Chromium-based browsers
++  if (getBrowserEngineKind() !== BrowserEngineKind.Chromium) {
++    return
++  }
++
++  if (playwrightProperties.state !== State.Success) {
++    return
++  }
++
++  const { pwInitScripts, playwrightBinding } = playwrightProperties.value
++
++  if (pwInitScripts || playwrightBinding) {
++    return BotKind.Playwright
++  }
++}
+diff --git a/src/sources/playwright_properties.test.ts b/src/sources/playwright_properties.test.ts
+new file mode 100644
+index 0000000..c7e3210
+--- /dev/null
++++ b/src/sources/playwright_properties.test.ts
+@@ -0,0 +1,11 @@
++import getPlaywrightProperties from './playwright_properties'
++
++describe('Sources', () => {
++  describe('playwrightProperties', () => {
++    it('returns playwright properties detection', () => {
++      const result = getPlaywrightProperties()
++      expect(typeof result.pwInitScripts).toBe('boolean')
++      expect(typeof result.playwrightBinding).toBe('boolean')
++    })
++  })
++})
+diff --git a/src/sources/playwright_properties.ts b/src/sources/playwright_properties.ts
+new file mode 100644
+index 0000000..4ee38e1
+--- /dev/null
++++ b/src/sources/playwright_properties.ts
+@@ -0,0 +1,18 @@
++import { BotdError, State } from '../types'
++
++export interface PlaywrightPropertiesPayload {
++  pwInitScripts: boolean
++  playwrightBinding: boolean
++}
++
++export default function getPlaywrightProperties(): PlaywrightPropertiesPayload {
++  try {
++    const global = globalThis as any
++    return {
++      pwInitScripts: '__pwInitScripts' in global && global.__pwInitScripts !== undefined,
++      playwrightBinding: '__playwright__binding__' in global && global.__playwright__binding__ !== undefined,
++    }
++  } catch (error) {
++    throw new BotdError(State.UnexpectedBehaviour, `Error checking playwright properties: ${error}`)
++  }
++}
+-- 
+2.50.1
+

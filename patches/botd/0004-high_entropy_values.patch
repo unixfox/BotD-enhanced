@@ -1,0 +1,120 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Emilien <4016501+unixfox@users.noreply.github.com>
+Date: Sun, 7 Sep 2025 22:00:31 +0200
+Subject: [PATCH 4/6] high_entropy_values
+
+---
+ src/detectors/high_entropy_values.ts    | 26 +++++++++++++++++
+ src/sources/high_entropy_values.test.ts | 21 ++++++++++++++
+ src/sources/high_entropy_values.ts      | 38 +++++++++++++++++++++++++
+ 3 files changed, 85 insertions(+)
+ create mode 100644 src/detectors/high_entropy_values.ts
+ create mode 100644 src/sources/high_entropy_values.test.ts
+ create mode 100644 src/sources/high_entropy_values.ts
+
+diff --git a/src/detectors/high_entropy_values.ts b/src/detectors/high_entropy_values.ts
+new file mode 100644
+index 0000000..ceb5155
+--- /dev/null
++++ b/src/detectors/high_entropy_values.ts
+@@ -0,0 +1,26 @@
++import { BotKind, ComponentDict, DetectorResponse, State, BrowserEngineKind } from '../types'
++import { getBrowserEngineKind } from '../utils/browser'
++
++export function detectHighEntropyValues({ highEntropyValues }: ComponentDict): DetectorResponse {
++  // Only run on Chromium-based browsers
++  if (getBrowserEngineKind() !== BrowserEngineKind.Chromium) {
++    return
++  }
++
++  if (highEntropyValues.state !== State.Success || !highEntropyValues.value) {
++    return
++  }
++
++  const data = highEntropyValues.value
++
++  // Check if all high entropy values are empty (signs of UA override/automation)
++  if (
++    data.architecture === '' &&
++    data.model === '' &&
++    data.platformVersion === '' &&
++    data.uaFullVersion === '' &&
++    data.bitness === ''
++  ) {
++    return BotKind.HeadlessChrome
++  }
++}
+diff --git a/src/sources/high_entropy_values.test.ts b/src/sources/high_entropy_values.test.ts
+new file mode 100644
+index 0000000..f29b867
+--- /dev/null
++++ b/src/sources/high_entropy_values.test.ts
+@@ -0,0 +1,21 @@
++import getHighEntropyValues from './high_entropy_values'
++
++describe('Sources', () => {
++  describe('highEntropyValues', () => {
++    it('returns high entropy values or null', async () => {
++      const result = await getHighEntropyValues()
++      
++      if (result === null) {
++        // API not available (non-Chromium or old version)
++        expect(result).toBeNull()
++      } else {
++        expect(typeof result.architecture).toBe('string')
++        expect(typeof result.bitness).toBe('string')
++        expect(typeof result.model).toBe('string')
++        expect(typeof result.platformVersion).toBe('string')
++        expect(typeof result.uaFullVersion).toBe('string')
++        expect(typeof result.userAgent).toBe('string')
++      }
++    })
++  })
++})
+diff --git a/src/sources/high_entropy_values.ts b/src/sources/high_entropy_values.ts
+new file mode 100644
+index 0000000..d1e948d
+--- /dev/null
++++ b/src/sources/high_entropy_values.ts
+@@ -0,0 +1,38 @@
++import { BotdError, State } from '../types'
++
++export interface HighEntropyValuesPayload {
++  architecture: string
++  bitness: string
++  model: string
++  platformVersion: string
++  uaFullVersion: string
++  userAgent: string
++}
++
++export default async function getHighEntropyValues(): Promise<HighEntropyValuesPayload | null> {
++  try {
++    const navigator = globalThis.navigator as any
++    if (!navigator?.userAgentData?.getHighEntropyValues) {
++      return null
++    }
++
++    const data = await navigator.userAgentData.getHighEntropyValues([
++      'architecture',
++      'bitness',
++      'model',
++      'platformVersion',
++      'uaFullVersion',
++    ])
++
++    return {
++      architecture: data.architecture || '',
++      bitness: data.bitness || '',
++      model: data.model || '',
++      platformVersion: data.platformVersion || '',
++      uaFullVersion: data.uaFullVersion || '',
++      userAgent: navigator.userAgent || '',
++    }
++  } catch (error) {
++    throw new BotdError(State.UnexpectedBehaviour, `Error getting high entropy values: ${error}`)
++  }
++}
+-- 
+2.50.1
+

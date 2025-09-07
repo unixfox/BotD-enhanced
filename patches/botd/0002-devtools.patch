@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Emilien <4016501+unixfox@users.noreply.github.com>
+Date: Sun, 7 Sep 2025 21:59:15 +0200
+Subject: [PATCH 2/6] devtools
+
+---
+ src/detectors/devtools_detection.ts    | 20 ++++++++++
+ src/sources/devtools_detection.test.ts | 11 ++++++
+ src/sources/devtools_detection.ts      | 53 ++++++++++++++++++++++++++
+ 3 files changed, 84 insertions(+)
+ create mode 100644 src/detectors/devtools_detection.ts
+ create mode 100644 src/sources/devtools_detection.test.ts
+ create mode 100644 src/sources/devtools_detection.ts
+
+diff --git a/src/detectors/devtools_detection.ts b/src/detectors/devtools_detection.ts
+new file mode 100644
+index 0000000..94e0d65
+--- /dev/null
++++ b/src/detectors/devtools_detection.ts
+@@ -0,0 +1,20 @@
++import { BotKind, ComponentDict, DetectorResponse, State, BrowserEngineKind } from '../types'
++import { getBrowserEngineKind } from '../utils/browser'
++
++export function detectDevtools({ devtoolsDetection }: ComponentDict): DetectorResponse {
++  // Only run on Chromium-based browsers
++  if (getBrowserEngineKind() !== BrowserEngineKind.Chromium) {
++    return
++  }
++
++  if (devtoolsDetection.state !== State.Success) {
++    return
++  }
++
++  const { devtoolsOpen, consoleAccessed } = devtoolsDetection.value
++
++  // DevTools open could indicate automation or debugging tools
++  if (devtoolsOpen && consoleAccessed) {
++    return BotKind.HeadlessChrome
++  }
++}
+diff --git a/src/sources/devtools_detection.test.ts b/src/sources/devtools_detection.test.ts
+new file mode 100644
+index 0000000..2ef473f
+--- /dev/null
++++ b/src/sources/devtools_detection.test.ts
+@@ -0,0 +1,11 @@
++import getDevtoolsDetection from './devtools_detection'
++
++describe('Sources', () => {
++  describe('devtoolsDetection', () => {
++    it('returns devtools detection', () => {
++      const result = getDevtoolsDetection()
++      expect(typeof result.devtoolsOpen).toBe('boolean')
++      expect(typeof result.consoleAccessed).toBe('boolean')
++    })
++  })
++})
+diff --git a/src/sources/devtools_detection.ts b/src/sources/devtools_detection.ts
+new file mode 100644
+index 0000000..cbfd169
+--- /dev/null
++++ b/src/sources/devtools_detection.ts
+@@ -0,0 +1,53 @@
++import { BotdError, State } from '../types'
++
++export interface DevtoolsDetectionPayload {
++  devtoolsOpen: boolean
++  consoleAccessed: boolean
++}
++
++export default function getDevtoolsDetection(): DevtoolsDetectionPayload {
++  try {
++    let devtoolsOpen = false
++    let consoleAccessed = false
++
++    // Method 1: Console debug timing check
++    const start = performance.now()
++    
++    // Check if console.debug accesses internal debugging functions
++    let stackLookupCount = 0
++    const errorObj = new Error()
++    
++    Object.defineProperty(errorObj, 'stack', {
++      configurable: false,
++      enumerable: false,
++      get: function() {
++        stackLookupCount += 1
++        return ''
++      }
++    })
++
++    try {
++      console.debug(errorObj)
++    } catch (e) {
++      // Ignore errors
++    }
++
++    const timeTaken = performance.now() - start
++
++    // DevTools typically causes longer execution times for certain operations
++    if (timeTaken > 50 && stackLookupCount > 0) {
++      devtoolsOpen = true
++    }
++
++    if (stackLookupCount > 0) {
++      consoleAccessed = true
++    }
++
++    return {
++      devtoolsOpen,
++      consoleAccessed,
++    }
++  } catch (error) {
++    throw new BotdError(State.UnexpectedBehaviour, `Error detecting devtools: ${error}`)
++  }
++}
+-- 
+2.50.1
+

@@ -1,0 +1,134 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Emilien <4016501+unixfox@users.noreply.github.com>
+Date: Sun, 7 Sep 2025 21:58:16 +0200
+Subject: [PATCH 1/6] chromedriver_injection
+
+---
+ src/detectors/chromedriver_injection.ts    | 19 ++++++
+ src/sources/chromedriver_injection.test.ts | 11 ++++
+ src/sources/chromedriver_injection.ts      | 69 ++++++++++++++++++++++
+ 3 files changed, 99 insertions(+)
+ create mode 100644 src/detectors/chromedriver_injection.ts
+ create mode 100644 src/sources/chromedriver_injection.test.ts
+ create mode 100644 src/sources/chromedriver_injection.ts
+
+diff --git a/src/detectors/chromedriver_injection.ts b/src/detectors/chromedriver_injection.ts
+new file mode 100644
+index 0000000..aa73689
+--- /dev/null
++++ b/src/detectors/chromedriver_injection.ts
+@@ -0,0 +1,19 @@
++import { BotKind, ComponentDict, DetectorResponse, State, BrowserEngineKind } from '../types'
++import { getBrowserEngineKind } from '../utils/browser'
++
++export function detectChromeDriverInjection({ chromedriverInjection }: ComponentDict): DetectorResponse {
++  // Only run on Chromium-based browsers
++  if (getBrowserEngineKind() !== BrowserEngineKind.Chromium) {
++    return
++  }
++
++  if (chromedriverInjection.state !== State.Success) {
++    return
++  }
++
++  const { detected, matches } = chromedriverInjection.value
++
++  if (detected && matches.length > 0) {
++    return BotKind.Selenium
++  }
++}
+diff --git a/src/sources/chromedriver_injection.test.ts b/src/sources/chromedriver_injection.test.ts
+new file mode 100644
+index 0000000..da0aaf4
+--- /dev/null
++++ b/src/sources/chromedriver_injection.test.ts
+@@ -0,0 +1,11 @@
++import getChromeDriverInjection from './chromedriver_injection'
++
++describe('Sources', () => {
++  describe('chromedriverInjection', () => {
++    it('returns chromedriver injection detection', () => {
++      const result = getChromeDriverInjection()
++      expect(typeof result.detected).toBe('boolean')
++      expect(Array.isArray(result.matches)).toBeTrue()
++    })
++  })
++})
+diff --git a/src/sources/chromedriver_injection.ts b/src/sources/chromedriver_injection.ts
+new file mode 100644
+index 0000000..9f15dec
+--- /dev/null
++++ b/src/sources/chromedriver_injection.ts
+@@ -0,0 +1,69 @@
++import { BotdError, State } from '../types'
++
++export interface ChromeDriverInjectionPayload {
++  detected: boolean
++  matches: string[]
++}
++
++const chromedriverSourceMatches = [
++  'WebDriver',
++  'W3C',
++  'Execute-Script',
++  'cdc_adoQpoasnfa76pfcZLmcfl',
++  'Chromium',
++  'shadow-6066-11e4-a52e-4f735466cecf',
++  'element-6066-11e4-a52e-4f735466cecf',
++  'STALE_ELEMENT_REFERENCE',
++  'crbug.com/40229283',
++  'shadow root is detached from the current frame',
++  'stale element not found in the current frame',
++]
++
++export default function getChromeDriverInjection(): ChromeDriverInjectionPayload {
++  try {
++    let detected = false
++    const matches: string[] = []
++
++    // Hook Function.prototype.apply to detect script injection
++    const originalApply = Function.prototype.apply
++    let hookInstalled = false
++
++    try {
++      Function.prototype.apply = function (thisArg: any, argArray?: any): any {
++        const code = this.toString()
++        
++        for (const testStr of chromedriverSourceMatches) {
++          if (code.indexOf(testStr) !== -1 && !matches.includes(testStr)) {
++            matches.push(testStr)
++            detected = true
++          }
++        }
++
++        return originalApply.call(this, thisArg, argArray)
++      }
++      hookInstalled = true
++
++      // Trigger some common automation function calls to detect injection
++      try {
++        // Try to trigger automation detection by accessing common properties
++        // These assignments are intentional to trigger potential hooks
++        void document.querySelector
++        void document.querySelectorAll
++        void HTMLElement.prototype.click
++      } catch (e) {
++        // Ignore errors during trigger attempts
++      }
++    } finally {
++      if (hookInstalled) {
++        Function.prototype.apply = originalApply
++      }
++    }
++
++    return {
++      detected,
++      matches,
++    }
++  } catch (error) {
++    throw new BotdError(State.UnexpectedBehaviour, `Error detecting ChromeDriver injection: ${error}`)
++  }
++}
+-- 
+2.50.1
+

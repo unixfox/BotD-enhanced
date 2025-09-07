@@ -1,0 +1,106 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Emilien <4016501+unixfox@users.noreply.github.com>
+Date: Sun, 7 Sep 2025 22:02:35 +0200
+Subject: [PATCH 6/6] import new checks
+
+---
+ src/detectors/index.ts | 10 ++++++++++
+ src/index.ts           |  7 ++++++-
+ src/sources/index.ts   | 12 +++++++++++-
+ src/types.ts           |  1 +
+ 4 files changed, 28 insertions(+), 2 deletions(-)
+
+diff --git a/src/detectors/index.ts b/src/detectors/index.ts
+index 243b67b..15c6cda 100644
+--- a/src/detectors/index.ts
++++ b/src/detectors/index.ts
+@@ -16,6 +16,11 @@ import { detectWebGL } from './webgl'
+ import { detectWindowExternal } from './window_external'
+ import { detectWindowSize } from './window_size'
+ import { detectDistinctiveProperties } from './distinctive_properties'
++import { detectPlaywright } from './playwright_properties'
++import { detectHighEntropyValues } from './high_entropy_values'
++import { detectChromeDriverInjection } from './chromedriver_injection'
++import { detectDevtools } from './devtools_detection'
++import { detectFpWorkerValidation } from './fpworker_validation'
+ 
+ // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+ export const detectors = {
+@@ -37,4 +42,9 @@ export const detectors = {
+   detectMimeTypesConsistent,
+   detectProductSub,
+   detectDistinctiveProperties,
++  detectPlaywright,
++  detectHighEntropyValues,
++  detectChromeDriverInjection,
++  detectDevtools,
++  detectFpWorkerValidation,
+ }
+diff --git a/src/index.ts b/src/index.ts
+index 6b08715..3d69cf0 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -1,6 +1,6 @@
+ import { version } from '../package.json'
+ import BotDetector from './detector'
+-import { sources, WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload } from './sources'
++import { sources, WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload, PlaywrightPropertiesPayload, HighEntropyValuesPayload, ChromeDriverInjectionPayload, DevtoolsDetectionPayload, FpWorkerValidationPayload } from './sources'
+ import { detectors } from './detectors'
+ import { BotdError, BotDetectorInterface, BotKind, BotDetectionResult } from './types'
+ import { collect, detect } from './api'
+@@ -57,6 +57,11 @@ export {
+   WindowSizePayload,
+   ProcessPayload,
+   DistinctivePropertiesPayload,
++  PlaywrightPropertiesPayload,
++  HighEntropyValuesPayload,
++  ChromeDriverInjectionPayload,
++  DevtoolsDetectionPayload,
++  FpWorkerValidationPayload,
+   BotDetectionResult,
+   BotKind,
+ }
+diff --git a/src/sources/index.ts b/src/sources/index.ts
+index 1dddac8..a718426 100644
+--- a/src/sources/index.ts
++++ b/src/sources/index.ts
+@@ -17,6 +17,11 @@ import getWebGL from './webgl'
+ import getWindowExternal from './window_external'
+ import getWindowSize, { WindowSizePayload } from './window_size'
+ import checkDistinctiveProperties, { DistinctivePropertiesPayload } from './distinctive_properties'
++import getPlaywrightProperties, { PlaywrightPropertiesPayload } from './playwright_properties'
++import getHighEntropyValues, { HighEntropyValuesPayload } from './high_entropy_values'
++import getChromeDriverInjection, { ChromeDriverInjectionPayload } from './chromedriver_injection'
++import getDevtoolsDetection, { DevtoolsDetectionPayload } from './devtools_detection'
++import getFpWorkerValidation, { FpWorkerValidationPayload } from './fpworker_validation'
+ import { getBrowserEngineKind, getBrowserKind, getDocumentFocus, isAndroid } from '../utils/browser'
+ 
+ export const sources = {
+@@ -43,6 +48,11 @@ export const sources = {
+   functionBind: getFunctionBind,
+   process: getProcess,
+   distinctiveProps: checkDistinctiveProperties,
++  playwrightProperties: getPlaywrightProperties,
++  highEntropyValues: getHighEntropyValues,
++  chromedriverInjection: getChromeDriverInjection,
++  devtoolsDetection: getDevtoolsDetection,
++  fpworkerValidation: getFpWorkerValidation,
+ }
+ 
+-export { WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload }
++export { WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload, PlaywrightPropertiesPayload, HighEntropyValuesPayload, ChromeDriverInjectionPayload, DevtoolsDetectionPayload, FpWorkerValidationPayload }
+diff --git a/src/types.ts b/src/types.ts
+index c1bdecb..4949421 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -52,6 +52,7 @@ export const BotKind = {
+ 
+   WebDriver: 'webdriver',
+   HeadlessChrome: 'headless_chrome',
++  Playwright: 'playwright',
+   Unknown: 'unknown',
+ } as const
+ 
+-- 
+2.50.1
+
