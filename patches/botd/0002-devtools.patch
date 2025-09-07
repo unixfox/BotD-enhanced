@@ -14,7 +14,7 @@ Subject: [PATCH 2/6] devtools
 
 diff --git a/src/detectors/devtools_detection.ts b/src/detectors/devtools_detection.ts
 new file mode 100644
-index 0000000..94e0d65
+index 0000000..f978c9f
 --- /dev/null
 +++ b/src/detectors/devtools_detection.ts
 @@ -0,0 +1,20 @@
@@ -33,7 +33,7 @@ index 0000000..94e0d65
 +
 +  const { devtoolsOpen, consoleAccessed } = devtoolsDetection.value
 +
-+  // DevTools open could indicate automation or debugging tools
++  // DevTools open could indicate automation or debugging tools.
 +  if (devtoolsOpen && consoleAccessed) {
 +    return BotKind.HeadlessChrome
 +  }
