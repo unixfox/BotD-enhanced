@@ -61,7 +61,9 @@ jobs:
         
         # Remove workflow files don't want them in the patched branch
         rm -rf .github/workflows/ || true
-        
+        git add .github/workflows/
+        git commit -m "remove github workflows"
+
         # Push the patched commits to the patched branch on the parent repository
         # The current HEAD in botd submodule contains all the patched commits
         git push --force parent-repo HEAD:refs/heads/patched
