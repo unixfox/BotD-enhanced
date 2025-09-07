@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to push to the repository
+      actions: write # Needed to modify workflow files
       pull-requests: read # Needed to read repository information
     
     steps:
