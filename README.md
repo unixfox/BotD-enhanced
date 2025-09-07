@@ -37,7 +37,7 @@ pip install git+https://github.com/lmstudio-ai/nq.git
 
 ## Using nq
 
-## Daily workflow
+### Daily workflow
 
 1. `cd botd` - Go into submodule
 2. Make your changes and commit
