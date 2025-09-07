@@ -11,8 +11,6 @@ Patches managed using the nq tool.
 ```bash
 git clone --recurse-submodules https://github.com/unixfox/BotD-enhanced.git
 cd BotD-enhanced
-### Install nq
-pip install git+https://github.com/lmstudio-ai/nq.git
 ```
 
 ### 2) Install nq
