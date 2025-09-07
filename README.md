@@ -2,7 +2,7 @@
 
 Enhanced version of [BotD](https://github.com/fingerprintjs/BotD) with more checks.
 
-Patches managed using the nq tool.
+Patches managed using the [nq](https://github.com/lmstudio-ai/nq) tool.
 
 ## Setup: clone repo + install nq + first nq setup
 
