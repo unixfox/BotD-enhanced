@@ -1,0 +1,60 @@
+name: Maintain Patched Branch
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  maintain-patched-branch:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch all history for all branches
+        submodules: recursive # Checkout submodules
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    
+    - name: Install nq
+      run: |
+        # Install nq from the GitHub repository
+        pip install git+https://github.com/lmstudio-ai/nq.git
+        
+        # Verify installation
+        nq --help || (echo "❌ nq installation failed" && exit 1)
+        echo "✅ nq installed successfully"
+    
+    - name: Create or reset patched branch
+      run: |
+        # Delete remote patched branch if it exists
+        git push origin --delete patched || true
+    
+    - name: Apply patches using nq and push to patched branch
+      run: |
+        # Apply all patches using nq to the botd submodule
+        nq apply botd
+        
+        # Verify patches were applied
+        if [ $? -eq 0 ]; then
+          echo "✅ Patches applied successfully to botd submodule"
+        else
+          echo "❌ Failed to apply patches to botd submodule"
+          exit 1
+        fi
+        
+        # Navigate to botd submodule directory
+        cd botd
+        
+        # Add the parent repository as a remote (if not already exists)
+        git remote add parent-repo https://github.com/${{ github.repository }}.git
+        
+        # Push the patched commits to the patched branch on the parent repository
+        # The current HEAD in botd submodule contains all the patched commits
+        git push --force parent-repo HEAD:patched
