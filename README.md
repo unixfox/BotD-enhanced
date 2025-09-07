@@ -37,11 +37,12 @@ pip install git+https://github.com/lmstudio-ai/nq.git
 
 ### Daily workflow
 
-1. `cd botd` - Go into submodule
-2. Make your changes and commit
-3. `cd ..`
-4. `nq export botd` - Save changes as patches
-5. `nq status botd` - Check everything is clean
+1. `nq pull botd` - Pull changes from remote
+2. `cd botd` - Go into submodule
+3. Make your changes and commit
+4. `cd ..`
+5. `nq export botd` - Save changes as patches
+6. `nq status botd` - Check everything is clean
 
 ### Apply patches
 ```bash
@@ -80,4 +81,11 @@ nq reset botd
 
 ```bash
 nq pull botd
+nq reset botd
+git checkout main
+git pull origin main
+cd ../..
+git add botd
+git commit -m "update against latest commit botd"
+nq apply botd
 ```
