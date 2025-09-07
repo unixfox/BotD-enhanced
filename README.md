@@ -76,6 +76,18 @@ nq export botd
 nq reset botd
 ```
 
+### Edit existing patch
+
+1. `cd botd` - Go to the submodule directory
+2. `git log` - Find the commit/patch you want to edit
+3. `git rebase --interactive 6c391e~` - The commit you want to edit
+4. Do your changes
+5. `git add yourchanges`
+6. `git rebase --continue`
+7. `cd ..`
+8. `nq export botd`
+9. Commit your changes
+
 ### Update submodule
 ⚠ In the parent project (botd-enhanced)
 
