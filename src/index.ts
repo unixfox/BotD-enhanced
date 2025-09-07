@@ -1,6 +1,6 @@
 import { version } from '../package.json'
 import BotDetector from './detector'
-import { sources, WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload } from './sources'
+import { sources, WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload, PlaywrightPropertiesPayload, HighEntropyValuesPayload, ChromeDriverInjectionPayload, DevtoolsDetectionPayload, FpWorkerValidationPayload } from './sources'
 import { detectors } from './detectors'
 import { BotdError, BotDetectorInterface, BotKind, BotDetectionResult } from './types'
 import { collect, detect } from './api'
@@ -57,6 +57,11 @@ export {
   WindowSizePayload,
   ProcessPayload,
   DistinctivePropertiesPayload,
+  PlaywrightPropertiesPayload,
+  HighEntropyValuesPayload,
+  ChromeDriverInjectionPayload,
+  DevtoolsDetectionPayload,
+  FpWorkerValidationPayload,
   BotDetectionResult,
   BotKind,
 }

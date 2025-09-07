@@ -17,6 +17,11 @@ import getWebGL from './webgl'
 import getWindowExternal from './window_external'
 import getWindowSize, { WindowSizePayload } from './window_size'
 import checkDistinctiveProperties, { DistinctivePropertiesPayload } from './distinctive_properties'
+import getPlaywrightProperties, { PlaywrightPropertiesPayload } from './playwright_properties'
+import getHighEntropyValues, { HighEntropyValuesPayload } from './high_entropy_values'
+import getChromeDriverInjection, { ChromeDriverInjectionPayload } from './chromedriver_injection'
+import getDevtoolsDetection, { DevtoolsDetectionPayload } from './devtools_detection'
+import getFpWorkerValidation, { FpWorkerValidationPayload } from './fpworker_validation'
 import { getBrowserEngineKind, getBrowserKind, getDocumentFocus, isAndroid } from '../utils/browser'
 
 export const sources = {
@@ -43,6 +48,11 @@ export const sources = {
   functionBind: getFunctionBind,
   process: getProcess,
   distinctiveProps: checkDistinctiveProperties,
+  playwrightProperties: getPlaywrightProperties,
+  highEntropyValues: getHighEntropyValues,
+  chromedriverInjection: getChromeDriverInjection,
+  devtoolsDetection: getDevtoolsDetection,
+  fpworkerValidation: getFpWorkerValidation,
 }
 
-export { WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload }
+export { WindowSizePayload, ProcessPayload, DistinctivePropertiesPayload, PlaywrightPropertiesPayload, HighEntropyValuesPayload, ChromeDriverInjectionPayload, DevtoolsDetectionPayload, FpWorkerValidationPayload }

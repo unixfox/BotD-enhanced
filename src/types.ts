@@ -52,6 +52,7 @@ export const BotKind = {
 
   WebDriver: 'webdriver',
   HeadlessChrome: 'headless_chrome',
+  Playwright: 'playwright',
   Unknown: 'unknown',
 } as const
 

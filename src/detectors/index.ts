@@ -16,6 +16,11 @@ import { detectWebGL } from './webgl'
 import { detectWindowExternal } from './window_external'
 import { detectWindowSize } from './window_size'
 import { detectDistinctiveProperties } from './distinctive_properties'
+import { detectPlaywright } from './playwright_properties'
+import { detectHighEntropyValues } from './high_entropy_values'
+import { detectChromeDriverInjection } from './chromedriver_injection'
+import { detectDevtools } from './devtools_detection'
+import { detectFpWorkerValidation } from './fpworker_validation'
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const detectors = {
@@ -37,4 +42,9 @@ export const detectors = {
   detectMimeTypesConsistent,
   detectProductSub,
   detectDistinctiveProperties,
+  detectPlaywright,
+  detectHighEntropyValues,
+  detectChromeDriverInjection,
+  detectDevtools,
+  detectFpWorkerValidation,
 }
